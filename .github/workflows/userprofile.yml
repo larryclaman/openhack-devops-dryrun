@@ -33,6 +33,11 @@ jobs:
 
 # look at https://github.com/metcalfc/docker-action-examples/blob/main/.github/workflows/pr-ci.yml
 
+      - run: |
+          echo $${{ github.run_number }}
+          echo $${{ github.run_id }}
+
+
 #### Need to add tag version!!!!
       - name: Build and push userprofile app
         id: userprofile_docker_build
