@@ -1,9 +1,10 @@
 
-name: LabelAndIssue
-on: [pull_request]
+name: Label
 
+on: [pull_request]
+  
 jobs:
-  labelandissue:
+  label:
 
     runs-on: ubuntu-latest
 
@@ -16,8 +17,4 @@ jobs:
       with:
         repo-token: "${{ secrets.GITHUB_TOKEN }}"
         
-    - name: Verify Linked Issue
-      uses: hattan/verify-linked-issue-action@v1.1.1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 

@@ -1,0 +1,15 @@
+name: CheckIssue
+on:
+  pull_request:
+    types: [edited, synchronize, opened, reopened]
+  check_run:
+
+jobs:
+  issue:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verify Linked Issue
+        uses: hattan/verify-linked-issue-action@v1.1.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
