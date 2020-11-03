@@ -1,0 +1,92 @@
+name: build-userprofile
+
+env:
+  apiname: userprofile
+on:
+  workflow_dispatch:
+  push:
+    branches: [ master ]
+    paths: 
+      - apis/userprofile/**  
+      - .github/workflows/userprofile-build.yml
+  pull_request:
+    branches: [ master ]
+    paths: 
+      - apis/userprofile/**
+      - .github/workflows/userprofile-build.yml
+
+
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This workflow contains a single job called "build"
+  build:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v2
+      # Configures Docker actions to use buildx
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+
+      - name: Cache Docker layers
+        uses: actions/cache@v2
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-${{env.apiname}}-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-${{env.apiname}}-
+
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v1
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.CR_PAT }}
+
+# look at https://github.com/metcalfc/docker-action-examples/blob/main/.github/workflows/pr-ci.yml
+
+
+      - name: Build userprofile app and run test
+        id: userprofile_docker_build
+        uses: docker/build-push-action@v2
+        with:
+          push: false
+          tags: |
+            ghcr.io/${{ github.repository_owner }}/oh${{env.apiname}}:${{ github.run_number }}
+            ghcr.io/${{ github.repository_owner }}/oh${{env.apiname}}:latest
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,dest=/tmp/.buildx-cache
+          file: apis/${{env.apiname}}/Dockerfile
+          context: apis/${{env.apiname}}
+          target: test
+
+      - name: create issue if build & test failed
+        if: failure()
+        env:
+          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+        run: |
+          title="${{ env.build_name }} Workflow ${{ github.run_number }} Failed! "
+          body="${{ env.build_name }} Worflow Failure \
+          Build Number: ${{ github.run_number }} \
+          Build Log: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }} \
+          SHA: [${{ github.sha }}](https://github.com/${{ github.repository }}/commit/${{ github.sha }})"
+          gh issue create --title "$title" --body "$body"
+
+
+    # - uses: @0.9.0
+    #   if: failure() actions/github-script
+    #   with:
+    #     github-token: ${{secrets.GITHUB_TOKEN}}
+    #     script: |
+    #       let body = "${{ env.build_name }} Worflow Failure \n Build Number: ${{ github.run_number }} \n Build Log: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }} \n SHA: [${{ github.sha }}](https://github.com/${{ github.repository }}/commit/${{ github.sha }}) \n";
+    #       github.issues.create({
+    #         owner: context.repo.owner,
+    #         repo: context.repo.repo,
+    #         title: "${{ env.build_name }} Workflow ${{ github.run_number }} Failed! ",
+    #         body: body
+    #       });

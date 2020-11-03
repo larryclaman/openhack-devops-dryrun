@@ -1,19 +1,19 @@
-name: build-userprofile
+name: build-userjava
 
 env:
-  apiname: userprofile
+  apiname: user-java
 on:
   workflow_dispatch:
   push:
     branches: [ master ]
     paths: 
-      - apis/userprofile/**  
-      - .github/workflows/userprofile.yml
+      - apis/user-java/**  
+      - .github/workflows/userjava-build.yml
   pull_request:
     branches: [ master ]
     paths: 
-      - apis/userprofile/**
-      - .github/workflows/userprofile.yml
+      - apis/user-java/**
+      - .github/workflows/userjava-build.yml
 
 
 
@@ -51,8 +51,8 @@ jobs:
 # look at https://github.com/metcalfc/docker-action-examples/blob/main/.github/workflows/pr-ci.yml
 
 
-      - name: Build userprofile app and run test
-        id: userprofile_docker_build
+      - name: Build user-hava app and run test
+        id: userjava_docker_build
         uses: docker/build-push-action@v2
         with:
           push: false

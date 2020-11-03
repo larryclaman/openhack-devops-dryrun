@@ -4,12 +4,8 @@ ADD ./pom.xml pom.xml
 ADD ./src src/
 RUN mvn clean package
 
-# run unit test
-FROM build-env as test
-RUN mvn test 
-
 # build runtime image
-FROM openjdk:11-jre-slim as final
+FROM openjdk:11-jre-slim
 
 EXPOSE 8080
 
