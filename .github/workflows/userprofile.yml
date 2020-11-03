@@ -31,6 +31,8 @@ jobs:
           username: ${{ github.repository_owner }}
           password: ${{ secrets.CR_PAT }}
 
+# look at https://github.com/metcalfc/docker-action-examples/blob/main/.github/workflows/pr-ci.yml
+
 #### Need to add tag version!!!!
       - name: Build and push userprofile app
         id: userprofile_docker_build
@@ -38,8 +40,8 @@ jobs:
         with:
           push: true
           tags: |
-            ghcr.io/${{ github.repository_owner }}/userprofile:$${{ github.run_id }}
-            ghcr.io/${{ github.repository_owner }}/userprofile:latest
+            ghcr.io/${{ github.repository_owner }}/ohuserprofile:$${{ github.run_number }}
+            ghcr.io/${{ github.repository_owner }}/ohuserprofile:latest
           #cache-from: type=local,src=/tmp/.buildx-cache
           #cache-to: type=local,dest=/tmp/.buildx-cache
           file: apis/userprofile/Dockerfile
