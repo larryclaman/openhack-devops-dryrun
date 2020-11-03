@@ -10,6 +10,9 @@ RUN go get
 
 RUN CGO_ENABLED=0 GOOS=linux go build -o main .
 
+FROM gobuild as test
+RUN go test ./tests
+
 FROM alpine:3.8 AS gorun
 
 ENV SQL_USER="YourUserName" \
@@ -30,3 +33,5 @@ COPY --from=gobuild /go/src/github.com/Azure-Samples/openhack-devops-team/apis/t
 COPY --from=gobuild /go/src/github.com/Azure-Samples/openhack-devops-team/apis/trips/api ./api/
 
 CMD ["./main"]
+
+
