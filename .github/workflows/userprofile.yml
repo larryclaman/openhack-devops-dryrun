@@ -56,4 +56,4 @@ jobs:
           cache-to: type=local,dest=/tmp/.buildx-cache
           file: apis/${{env.apiname}}/Dockerfile
           context: apis/${{env.apiname}}
-          stage: test
+          target: test
