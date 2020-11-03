@@ -48,11 +48,12 @@ jobs:
         id: userprofile_docker_build
         uses: docker/build-push-action@v2
         with:
-          push: true
+          push: false
           tags: |
             ghcr.io/${{ github.repository_owner }}/oh${{env.apiname}}:${{ github.run_number }}
             ghcr.io/${{ github.repository_owner }}/oh${{env.apiname}}:latest
-          #cache-from: type=local,src=/tmp/.buildx-cache
-          #cache-to: type=local,dest=/tmp/.buildx-cache
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,dest=/tmp/.buildx-cache
           file: apis/${{env.apiname}}/Dockerfile
           context: apis/${{env.apiname}}
+          stage: test

@@ -1,11 +1,15 @@
-FROM node:8-alpine
+FROM node:8-alpine as base 
 
 COPY . /app
-
 WORKDIR  /app
-
-EXPOSE 8080
-
 RUN npm install
 
+FROM base as test 
+RUN npm test
+# this creates /app/reportsuserprofile-report.xml 
+# RUN ls -l reports && pwd
+CMD cat /app/reports/userprofile-report.xml
+
+FROM base as final
+EXPOSE 8080
 CMD npm start
