@@ -5,7 +5,7 @@ env:
 on:
   workflow_dispatch:
   push:
-    branches: [ master ]
+    branches: [ '*' ]
     paths: 
       - apis/userprofile/**  
       - .github/workflows/userprofile-build.yml
@@ -55,7 +55,8 @@ jobs:
         id: userprofile_docker_build
         uses: docker/build-push-action@v2
         with:
-          push: false
+          load: true
+          # push: true
           tags: |
             ghcr.io/${{ github.repository_owner }}/oh${{env.apiname}}:${{ github.run_number }}
             ghcr.io/${{ github.repository_owner }}/oh${{env.apiname}}:latest
