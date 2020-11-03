@@ -4,6 +4,9 @@
 repo:
   - ./*
 
+workflow:
+  - .github
+
 poi:
   - apis/poi
 
