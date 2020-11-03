@@ -5,18 +5,18 @@ repo:
   - ./*
 
 workflow:
-  - .github
+  - .github/**/*
 
 poi:
-  - apis/poi
+  - apis/poi/**/*
 
 trips:
-  - apis/trips
+  - apis/trips/**/*
 
 user-java:
-  - apis/user-java
+  - apis/user-java/**/*
 
 userprofile:
-  - apis/userprofile
+  - apis/userprofile/**/*
 
   
