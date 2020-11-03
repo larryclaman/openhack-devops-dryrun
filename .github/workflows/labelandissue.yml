@@ -1,0 +1,21 @@
+
+name: LabelAndIssue
+on: [pull_request]
+
+jobs:
+  labelandissue:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    # To use this workflow, you will need to set up a .github/labeler.yml
+    # file with configuration.  For more information, see:
+    # https://github.com/actions/labeler
+    - name: Label PR
+      uses: actions/labeler@v2
+      with:
+        repo-token: "${{ secrets.GITHUB_TOKEN }}"
+        
+    - name: Verify Linked Issue
+      uses: hattan/verify-linked-issue-action@v1.1.1
+
