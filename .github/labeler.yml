@@ -1,0 +1,19 @@
+# Used by label action
+
+# Add 'repo' label to any root file changes
+repo:
+  - ./*
+
+poi:
+  - apis/poi
+
+trips:
+  - apis/trips
+
+user-java:
+  - apis/user-java
+
+userprofile:
+  - apis/userprofile
+
+  
