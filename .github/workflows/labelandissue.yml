@@ -18,4 +18,6 @@ jobs:
         
     - name: Verify Linked Issue
       uses: hattan/verify-linked-issue-action@v1.1.1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
