@@ -83,7 +83,7 @@ jobs:
 
 
       - name: Build userprofile app and push
-        id: userprofile_docker_buildtest
+        id: userprofile_docker_buildpush
         uses: docker/build-push-action@v2
         with:
           push: true
