@@ -95,7 +95,7 @@ jobs:
         id: userjava_docker_buildpush
         uses: docker/build-push-action@v2
         with:
-          push: false
+          push: true
           tags: |
             ${{env.acrsite}}/${{env.repo}}:${{ github.run_number }}
           cache-from: type=local,src=/tmp/.buildx-cache
