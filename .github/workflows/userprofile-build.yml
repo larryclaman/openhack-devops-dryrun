@@ -119,6 +119,9 @@ jobs:
       with:
         creds: ${{ secrets.AZURE_CREDENTIALS }} 
 
+    - run: |
+        az webapp list --output table
+
     - name: 'Deploy to Azure Web App for Container'
       uses: azure/webapps-deploy@v2
       with: 
