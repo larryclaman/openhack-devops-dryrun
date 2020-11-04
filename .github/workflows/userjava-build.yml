@@ -2,6 +2,10 @@ name: build-userjava
 
 env:
   apiname: user-java
+  repo: devopsoh/api-user-java
+  acrreg: openhack8pm8c3y5acr
+  acrsite: openhack8pm8c3y5acr.azurecr.io
+  tenant: 3ba0d033-7360-4927-8b0d-337841610e82
 on:
   workflow_dispatch:
   push:
@@ -41,12 +45,19 @@ jobs:
             ${{ runner.os }}-${{env.apiname}}-
 
 
-      - name: Login to GitHub Container Registry
+      # - name: Login to GitHub Container Registry
+      #   uses: docker/login-action@v1
+      #   with:
+      #     registry: ghcr.io
+      #     username: ${{ github.repository_owner }}
+      #     password: ${{ secrets.CR_PAT }}
+
+      - name: Login to Azure Container Registry
         uses: docker/login-action@v1
         with:
-          registry: ghcr.io
-          username: ${{ github.repository_owner }}
-          password: ${{ secrets.CR_PAT }}
+          registry: ${{env.acrsite}}
+          username: ${{ secrets.ACR_USERNAME }}
+          password: ${{ secrets.ACR_PASSWORD }}
 
 # look at https://github.com/metcalfc/docker-action-examples/blob/main/.github/workflows/pr-ci.yml
 
@@ -57,13 +68,15 @@ jobs:
         with:
           push: false
           tags: |
-            ghcr.io/${{ github.repository_owner }}/oh${{env.apiname}}:${{ github.run_number }}
-            ghcr.io/${{ github.repository_owner }}/oh${{env.apiname}}:latest
+            ${{env.acrsite}}/${{env.repo}}-test:${{ github.run_number }}
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache
           file: apis/${{env.apiname}}/Dockerfile
           context: apis/${{env.apiname}}
           target: test
+          # old tags: 
+          # ghcr.io/${{ github.repository_owner }}/oh${{env.apiname}}:${{ github.run_number }}
+
 
       - name: create issue if build & test failed
         if: failure()
@@ -77,6 +90,21 @@ jobs:
           SHA: [${{ github.sha }}](https://github.com/${{ github.repository }}/commit/${{ github.sha }})"
           gh issue create --title "$title" --body "$body"
 
+
+      - name: Build user-java app and push
+        id: userjava_docker_build
+        uses: docker/build-push-action@v2
+        with:
+          push: false
+          tags: |
+            ${{env.acrsite}}/${{env.repo}}:${{ github.run_number }}
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,dest=/tmp/.buildx-cache
+          file: apis/${{env.apiname}}/Dockerfile
+          context: apis/${{env.apiname}}
+          target: final
+          # old tags: 
+          # ghcr.io/${{ github.repository_owner }}/oh${{env.apiname}}:${{ github.run_number }}
 
     # - uses: @0.9.0
     #   if: failure() actions/github-script
