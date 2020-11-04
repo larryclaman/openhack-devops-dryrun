@@ -2,6 +2,11 @@ name: build-trips
 
 env:
   apiname: trips
+  repo: devopsoh/api-trips
+  acrreg: openhack8pm8c3y5acr
+  acrsite: openhack8pm8c3y5acr.azurecr.io
+  tenant: 3ba0d033-7360-4927-8b0d-337841610e82
+
 on:
   workflow_dispatch:
   push:
@@ -41,30 +46,55 @@ jobs:
             ${{ runner.os }}-${{env.apiname}}-
 
 
-      - name: Login to GitHub Container Registry
+      # - name: Login to GitHub Container Registry
+      #   uses: docker/login-action@v1
+      #   with:
+      #     registry: ghcr.io
+      #     username: ${{ github.repository_owner }}
+      #     password: ${{ secrets.CR_PAT }}
+
+      - name: Login to Azure Container Registry
         uses: docker/login-action@v1
         with:
-          registry: ghcr.io
-          username: ${{ github.repository_owner }}
-          password: ${{ secrets.CR_PAT }}
+          registry: ${{env.acrsite}}
+          username: ${{ secrets.ACR_USERNAME }}
+          password: ${{ secrets.ACR_PASSWORD }}
+
+
+      # - uses: azure/login@v1
+      #   name: Azure Login
+      #   with:
+      #     creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      # - name: Log into ACR
+      #   uses: azure/CLI@v1
+      #   with:
+      #     #azcliversion: 2.0.72
+      #     inlineScript: |
+      #       tj=$(az acr login -n ${{env.acrreg}} -t)
+      #       token=$(echo $tj|jq -r .token)
+
+
 
 # look at https://github.com/metcalfc/docker-action-examples/blob/main/.github/workflows/pr-ci.yml
 
 
       - name: Build trips app and run test
-        id: userprofile_docker_build
+        id: userprofile_docker_test
         uses: docker/build-push-action@v2
         with:
           load: true
           # push: true
           tags: |
-            ghcr.io/${{ github.repository_owner }}/oh${{env.apiname}}:${{ github.run_number }}
-            ghcr.io/${{ github.repository_owner }}/oh${{env.apiname}}:latest
+            ${{env.acrsite}}/${{env.repo}}-test:${{ github.run_number }}
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache
           file: apis/${{env.apiname}}/Dockerfile
           context: apis/${{env.apiname}}
           target: test
+          # old tags:
+          # ghcr.io/${{ github.repository_owner }}/oh${{env.apiname}}:${{ github.run_number }}
+          # ghcr.io/${{ github.repository_owner }}/oh${{env.apiname}}:latest
 
       - name: create issue if build & test failed
         if: failure()
@@ -78,16 +108,22 @@ jobs:
           SHA: [${{ github.sha }}](https://github.com/${{ github.repository }}/commit/${{ github.sha }})"
           gh issue create --title "$title" --body "$body"
 
+      - name: Build trips app and push
+        id: userprofile_docker_buildpush
+        uses: docker/build-push-action@v2
+        with:
+          push: true
+          tags: |
+            ${{env.acrsite}}/${{env.repo}}:${{ github.run_number }}
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,dest=/tmp/.buildx-cache
+          file: apis/${{env.apiname}}/Dockerfile
+          context: apis/${{env.apiname}}
+          target: gorun
+          # old tags:
+          # ghcr.io/${{ github.repository_owner }}/oh${{env.apiname}}:${{ github.run_number }}
+          # ghcr.io/${{ github.repository_owner }}/oh${{env.apiname}}:latest
 
-    # - uses: @0.9.0
-    #   if: failure() actions/github-script
-    #   with:
-    #     github-token: ${{secrets.GITHUB_TOKEN}}
-    #     script: |
-    #       let body = "${{ env.build_name }} Worflow Failure \n Build Number: ${{ github.run_number }} \n Build Log: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }} \n SHA: [${{ github.sha }}](https://github.com/${{ github.repository }}/commit/${{ github.sha }}) \n";
-    #       github.issues.create({
-    #         owner: context.repo.owner,
-    #         repo: context.repo.repo,
-    #         title: "${{ env.build_name }} Workflow ${{ github.run_number }} Failed! ",
-    #         body: body
-    #       });
+
+
+
