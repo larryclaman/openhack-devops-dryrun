@@ -63,7 +63,7 @@ jobs:
 
 
       - name: Build user-java app and run test
-        id: userjava_docker_build
+        id: userjava_docker_buildtest
         uses: docker/build-push-action@v2
         with:
           push: false
@@ -92,7 +92,7 @@ jobs:
 
 
       - name: Build user-java app and push
-        id: userjava_docker_build
+        id: userjava_docker_buildpush
         uses: docker/build-push-action@v2
         with:
           push: false
