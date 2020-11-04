@@ -81,7 +81,7 @@ jobs:
           SHA: [${{ github.sha }}](https://github.com/${{ github.repository }}/commit/${{ github.sha }})"
           gh issue create --title "$title" --body "$body"
 
-
+ 
       - name: Build userprofile app and push
         id: userprofile_docker_buildpush
         uses: docker/build-push-action@v2
