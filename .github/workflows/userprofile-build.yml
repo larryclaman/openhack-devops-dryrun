@@ -6,6 +6,7 @@ env:
   acrreg: openhack8pm8c3y5acr
   acrsite: openhack8pm8c3y5acr.azurecr.io
   tenant: 3ba0d033-7360-4927-8b0d-337841610e82
+  RG: openhack8pm8c3y5rg
   AZURE_WEBAPP_NAME: openhack8pm8c3y5userprofile   # set this to your application's name
 #  CONTAINER_REGISTRY: ${{ secrets.REGISTRY_URL }}  # set secret with Container Registry URL, example : xyz.azurecr.io 
 
@@ -119,8 +120,7 @@ jobs:
       with:
         creds: ${{ secrets.AZURE_CREDENTIALS }} 
 
-    - run: |
-        az webapp list --output table
+
 
     - name: 'Deploy to Azure Web App for Container'
       uses: azure/webapps-deploy@v2
@@ -129,3 +129,10 @@ jobs:
         images: ${{env.acrsite}}/${{env.repo}}:${{ github.run_number }}
         slot-name: staging
        # startup-command: 'npm start'    # Include start up command to start the app container
+
+
+    - name: Swap Slots
+      run: |
+        az webapp deployment slot swap -g ${{env.RG}} -n ${{ env.AZURE_WEBAPP_NAME }} \
+             --slot staging  --target-slot production
+      
