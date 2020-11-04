@@ -86,7 +86,7 @@ jobs:
           load: true
           # push: true
           tags: |
-            ${{env.acrsite}}/${{ github.repository_owner }}/${{env.repo}}-test:${{ github.run_number }}
+            ${{env.acrsite}}/${{env.repo}}-test:${{ github.run_number }}
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache
           file: apis/${{env.apiname}}/Dockerfile
@@ -114,7 +114,7 @@ jobs:
         with:
           push: true
           tags: |
-            ${{env.acrsite}}/${{ github.repository_owner }}/${{env.repo}}:${{ github.run_number }}
+            ${{env.acrsite}}/${{env.repo}}:${{ github.run_number }}
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache
           file: apis/${{env.apiname}}/Dockerfile
