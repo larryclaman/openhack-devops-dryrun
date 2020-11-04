@@ -124,5 +124,5 @@ jobs:
       with: 
         app-name: ${{ env.AZURE_WEBAPP_NAME }} 
         images: ${{env.acrsite}}/${{env.repo}}:${{ github.run_number }}
-        slot: staging
+        slot-name: staging
        # startup-command: 'npm start'    # Include start up command to start the app container
