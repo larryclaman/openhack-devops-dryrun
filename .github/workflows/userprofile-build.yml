@@ -24,7 +24,7 @@ on:
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   # This workflow contains a single job called "build"
-  build:
+  build_and_test:
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
 
@@ -96,8 +96,8 @@ jobs:
         with:
           push: true
           tags: |
-           ${{env.acrsite}}/${{env.repo}}-test:${{ github.run_number }}   
-           ${{env.acrsite}}/${{env.repo}}-test:${{ github.run_number }}
+           ${{env.acrsite}}/${{env.repo}}:${{ github.run_number }}
+           ${{env.acrsite}}/${{env.repo}}-test:latest   
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache
           file: apis/${{env.apiname}}/Dockerfile
@@ -105,15 +105,5 @@ jobs:
           target: final
 
 
-    # - uses: @0.9.0
-    #   if: failure() actions/github-script
-    #   with:
-    #     github-token: ${{secrets.GITHUB_TOKEN}}
-    #     script: |
-    #       let body = "${{ env.build_name }} Worflow Failure \n Build Number: ${{ github.run_number }} \n Build Log: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }} \n SHA: [${{ github.sha }}](https://github.com/${{ github.repository }}/commit/${{ github.sha }}) \n";
-    #       github.issues.create({
-    #         owner: context.repo.owner,
-    #         repo: context.repo.repo,
-    #         title: "${{ env.build_name }} Workflow ${{ github.run_number }} Failed! ",
-    #         body: body
-    #       });
+
+
