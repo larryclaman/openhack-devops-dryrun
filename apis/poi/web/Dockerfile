@@ -11,8 +11,18 @@ RUN dotnet publish -c Release -o out
 COPY ./appsettings.*.json /app/out/
 COPY ./appsettings.json /app/out/
 
+
+#FROM build-env as test
+#RUN mkdir -p tests/UnitTests
+#COPY test/* tests
+#RUN dotnet test
+#RUN dotnet test --no-restore --verbosity normal tests/UnitTests  /p:CollectCoverage=true /p:CoverletOutput=lcov/ /p:CoverletOutputFormat=lcov
+
+
+
+
 # build runtime image
-FROM microsoft/dotnet:2.1-aspnetcore-runtime
+FROM microsoft/dotnet:2.1-aspnetcore-runtime as final
 WORKDIR /app
 
 ENV SQL_USER="YourUserName" \
