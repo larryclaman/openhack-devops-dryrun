@@ -2,6 +2,10 @@ name: build-userprofile
 
 env:
   apiname: userprofile
+  repo: devopsoh/api-userprofile
+  acrreg: openhack8pm8c3y5acr
+  acrsite: openhack8pm8c3y5acr.azurecr.io
+  tenant: 3ba0d033-7360-4927-8b0d-337841610e82
 on:
   workflow_dispatch:
   push:
@@ -52,14 +56,13 @@ jobs:
 
 
       - name: Build userprofile app and run test
-        id: userprofile_docker_build
+        id: userprofile_docker_buildtest
         uses: docker/build-push-action@v2
         with:
           load: true
           # push: true
           tags: |
-            ghcr.io/${{ github.repository_owner }}/oh${{env.apiname}}:${{ github.run_number }}
-            ghcr.io/${{ github.repository_owner }}/oh${{env.apiname}}:latest
+           ${{env.acrsite}}/${{env.repo}}-test:${{ github.run_number }}
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache
           file: apis/${{env.apiname}}/Dockerfile
@@ -77,6 +80,21 @@ jobs:
           Build Log: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }} \
           SHA: [${{ github.sha }}](https://github.com/${{ github.repository }}/commit/${{ github.sha }})"
           gh issue create --title "$title" --body "$body"
+
+
+      - name: Build userprofile app and push
+        id: userprofile_docker_buildtest
+        uses: docker/build-push-action@v2
+        with:
+          push: true
+          tags: |
+           ${{env.acrsite}}/${{env.repo}}-test:${{ github.run_number }}   
+           ${{env.acrsite}}/${{env.repo}}-test:${{ github.run_number }}
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,dest=/tmp/.buildx-cache
+          file: apis/${{env.apiname}}/Dockerfile
+          context: apis/${{env.apiname}}
+          target: final
 
 
     # - uses: @0.9.0
