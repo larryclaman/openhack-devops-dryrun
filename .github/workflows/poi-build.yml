@@ -71,10 +71,10 @@ jobs:
         env:
           GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
         run: |
-          title="${{ env.build_name }} Workflow ${{ github.run_number }} Failed! "
-          body="${{ env.build_name }} Worflow Failure \
-          Build Number: ${{ github.run_number }} \
-          Build Log: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }} \
+          title="${{ env.apiname }} Workflow ${{ github.run_number }} Failed! "
+          body="${{ env.apiname }} Workflow Failure 
+          Build Number: ${{ github.run_number }} 
+          Build Log: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }} 
           SHA: [${{ github.sha }}](https://github.com/${{ github.repository }}/commit/${{ github.sha }})"
           gh issue create --title "$title" --body "$body"
 
