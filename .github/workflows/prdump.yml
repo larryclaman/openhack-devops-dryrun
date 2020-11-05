@@ -13,8 +13,8 @@ jobs:
       - name: Dump GitHub context
         env:
           GITHUB_CONTEXT: ${{ toJson(github) }}
-          event_name: ${{event.pull_request.labels.name}}
-          event_who: ${{event.pull_request.user.login}}
+          event_name: ${{github.event.pull_request.labels.name}}
+          event_who: ${{github.event.pull_request.user.login}}
         run: |
           # echo "$GITHUB_CONTEXT"
           echo "$event_name"
