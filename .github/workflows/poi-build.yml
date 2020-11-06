@@ -70,8 +70,8 @@ jobs:
         id: userprofile_docker_buildtest
         uses: docker/build-push-action@v2
         with:
-          load: true
-          # push: true
+          load: false
+          push: false
           tags: |
            ${{env.acrsite}}/${{env.repo}}-test:${{ github.run_number }}
           cache-from: type=local,src=/tmp/.buildx-cache
