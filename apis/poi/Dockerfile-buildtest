@@ -15,8 +15,6 @@ COPY web/appsettings.json /app/out/
 
 FROM build-env as test
 COPY tests/ tests/
-RUN ls -l tests
-RUN ls -l tests/UnitTests
 WORKDIR /app/tests/UnitTests
 RUN dotnet add package coverlet.msbuild
 WORKDIR /app

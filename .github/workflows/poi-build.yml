@@ -2,6 +2,13 @@ name: build-poi
 
 env:
   apiname: poi
+  repo: devopsoh/api-poi
+  acrreg: openhack8pm8c3y5acr
+  acrsite: openhack8pm8c3y5acr.azurecr.io
+  tenant: 3ba0d033-7360-4927-8b0d-337841610e82
+  RG: openhack8pm8c3y5rg
+  AZURE_WEBAPP_NAME: openhack8pm8c3y5poi   # set this to your application's name
+
 on:
   workflow_dispatch:
   push:
@@ -20,7 +27,7 @@ on:
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   # This workflow contains a single job called "build"
-  build:
+  build_and_test:
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
 
@@ -41,12 +48,20 @@ jobs:
             ${{ runner.os }}-${{env.apiname}}-
 
 
-      - name: Login to GitHub Container Registry
+      # - name: Login to GitHub Container Registry
+      #   uses: docker/login-action@v1
+      #   with:
+      #     registry: ghcr.io
+      #     username: ${{ github.repository_owner }}
+      #     password: ${{ secrets.CR_PAT }}
+
+
+      - name: Login to Azure Container Registry
         uses: docker/login-action@v1
         with:
-          registry: ghcr.io
-          username: ${{ github.repository_owner }}
-          password: ${{ secrets.CR_PAT }}
+          registry: ${{env.acrsite}}
+          username: ${{ secrets.ACR_USERNAME }}
+          password: ${{ secrets.ACR_PASSWORD }}
 
 # look at https://github.com/metcalfc/docker-action-examples/blob/main/.github/workflows/pr-ci.yml
 
@@ -55,12 +70,12 @@ jobs:
         id: userprofile_docker_buildtest
         uses: docker/build-push-action@v2
         with:
-          load: true
-          # push: true
+          load: false
+          push: false
           tags: |
-            ghcr.io/${{ github.repository_owner }}/oh${{env.apiname}}-test:${{ github.run_number }}
+           ${{env.acrsite}}/${{env.repo}}-test:${{ github.run_number }}
           cache-from: type=local,src=/tmp/.buildx-cache
-          cache-to: type=local,dest=/tmp/.buildx-cache
+          cache-to: type=local,dest=/tmp/.buildx-cache,mode=max
           file: apis/${{env.apiname}}/Dockerfile-buildtest
           context: apis/${{env.apiname}}
           target: test
@@ -85,10 +100,51 @@ jobs:
         with:
           push: true
           tags: |
-            ghcr.io/${{ github.repository_owner }}/oh${{env.apiname}}:${{ github.run_number }}
-            ghcr.io/${{ github.repository_owner }}/oh${{env.apiname}}:latest
+            ${{env.acrsite}}/${{env.repo}}:${{ github.run_number }}
+            ${{env.acrsite}}/${{env.repo}}:latest
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache
           file: apis/${{env.apiname}}/Dockerfile-buildtest
           context: apis/${{env.apiname}}
           target: final
+
+
+  Deploy:
+    if: github.ref == 'refs/heads/master'
+    runs-on: ubuntu-latest
+    needs: build_and_test
+    steps:     
+    - uses: actions/checkout@v2
+
+    - uses: azure/login@v1
+      name: Azure Login
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }} 
+
+
+    - name: 'Deploy to Azure Web App for Container'
+      uses: azure/webapps-deploy@v2
+      with: 
+        app-name: ${{ env.AZURE_WEBAPP_NAME }} 
+        images: ${{env.acrsite}}/${{env.repo}}:${{ github.run_number }}
+        slot-name: staging
+       # startup-command: 'npm start'    # Include start up command to start the app container
+
+
+    - name: create issue if deploy fails
+      if: failure()
+      env:
+        GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+      run: |
+        title="${{ env.apiname }} Workflow ${{ github.run_number }} Failed! "
+        body="${{ env.apiname }} Workflow Failure  -- deploy
+        Build Number: ${{ github.run_number }} 
+        Build Log: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }} 
+        SHA: [${{ github.sha }}](https://github.com/${{ github.repository }}/commit/${{ github.sha }})"
+        gh issue create --title "$title" --body "$body"       
+
+    - name: Swap Slots
+      run: |
+        az webapp deployment slot swap -g ${{env.RG}} -n ${{ env.AZURE_WEBAPP_NAME }} \
+             --slot staging  --target-slot production
+    
