@@ -1,0 +1,46 @@
+FROM microsoft/dotnet:2.1-sdk AS build-env
+WORKDIR /app
+
+# copy csproj and restore as distinct layers
+COPY web/*.csproj ./web/
+RUN dotnet restore web/*.csproj
+
+# copy everything else and build
+COPY web/* ./web/
+RUN dotnet build --configuration Release --no-restore web/*.csproj 
+#RUN dotnet publish -c Release -o out
+COPY web/appsettings.*.json /app/out/
+COPY web/appsettings.json /app/out/
+
+
+FROM build-env as test
+COPY tests/ tests/
+RUN ls -l tests
+RUN ls -l tests/UnitTests
+WORKDIR /app/tests/UnitTests
+RUN dotnet add package coverlet.msbuild
+WORKDIR /app
+RUN dotnet build --configuration Release tests/UnitTests/UnitTests.csproj
+RUN dotnet test --no-restore --verbosity normal tests/UnitTests  /p:CollectCoverage=true /p:CoverletOutput=lcov/ /p:CoverletOutputFormat=lcov
+
+
+
+
+
+
+# build runtime image
+FROM microsoft/dotnet:2.1-aspnetcore-runtime as final
+WORKDIR /app
+
+ENV SQL_USER="YourUserName" \
+SQL_PASSWORD="changeme" \
+SQL_SERVER="changeme.database.windows.net" \
+SQL_DBNAME="mydrivingDB" \
+WEB_PORT="8080" \
+WEB_SERVER_BASE_URI="http://0.0.0.0" \
+ASPNETCORE_ENVIRONMENT="Production"
+
+COPY --from=build-env /app/out .
+
+ENTRYPOINT ["dotnet", "poi.dll"]
+

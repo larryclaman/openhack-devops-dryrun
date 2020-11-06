@@ -51,18 +51,17 @@ jobs:
 # look at https://github.com/metcalfc/docker-action-examples/blob/main/.github/workflows/pr-ci.yml
 
 
-      - name: Build trips app and run test
-        id: userprofile_docker_build
+      - name: Build poi app and run test
+        id: userprofile_docker_buildtest
         uses: docker/build-push-action@v2
         with:
           load: true
           # push: true
           tags: |
-            ghcr.io/${{ github.repository_owner }}/oh${{env.apiname}}:${{ github.run_number }}
-            ghcr.io/${{ github.repository_owner }}/oh${{env.apiname}}:latest
+            ghcr.io/${{ github.repository_owner }}/oh${{env.apiname}}-test:${{ github.run_number }}
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache
-          file: apis/${{env.apiname}}/Dockerfile
+          file: apis/${{env.apiname}}/Dockerfile-buildtest
           context: apis/${{env.apiname}}
           target: test
 
@@ -79,15 +78,17 @@ jobs:
           gh issue create --title "$title" --body "$body"
 
 
-    # - uses: @0.9.0
-    #   if: failure() actions/github-script
-    #   with:
-    #     github-token: ${{secrets.GITHUB_TOKEN}}
-    #     script: |
-    #       let body = "${{ env.build_name }} Worflow Failure \n Build Number: ${{ github.run_number }} \n Build Log: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }} \n SHA: [${{ github.sha }}](https://github.com/${{ github.repository }}/commit/${{ github.sha }}) \n";
-    #       github.issues.create({
-    #         owner: context.repo.owner,
-    #         repo: context.repo.repo,
-    #         title: "${{ env.build_name }} Workflow ${{ github.run_number }} Failed! ",
-    #         body: body
-    #       });
+
+      - name: Build poi app and push
+        id: userprofile_docker_buildpush
+        uses: docker/build-push-action@v2
+        with:
+          push: true
+          tags: |
+            ghcr.io/${{ github.repository_owner }}/oh${{env.apiname}}:${{ github.run_number }}
+            ghcr.io/${{ github.repository_owner }}/oh${{env.apiname}}:latest
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,dest=/tmp/.buildx-cache
+          file: apis/${{env.apiname}}/Dockerfile-buildtest
+          context: apis/${{env.apiname}}
+          target: final
