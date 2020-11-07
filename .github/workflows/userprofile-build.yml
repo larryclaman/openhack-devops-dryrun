@@ -120,19 +120,39 @@ jobs:
       with:
         creds: ${{ secrets.AZURE_CREDENTIALS }} 
 
-
-
     - name: 'Deploy to Azure Web App for Container'
       uses: azure/webapps-deploy@v2
       with: 
         app-name: ${{ env.AZURE_WEBAPP_NAME }} 
         images: ${{env.acrsite}}/${{env.repo}}:${{ github.run_number }}
         slot-name: staging
-       # startup-command: 'npm start'    # Include start up command to start the app container
+        # startup-command: xxxxx   # Include start up command to start the app container
 
+    - name: create issue if Deploy failed
+      if: failure()
+      env:
+        GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+      run: |
+        title="${{ env.build_name }} Workflow ${{ github.run_number }} Failed! "
+        body="${{ env.build_name }} Worflow Failure -- Deploy \
+        Build Number: ${{ github.run_number }} \
+        Build Log: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }} \
+        SHA: [${{ github.sha }}](https://github.com/${{ github.repository }}/commit/${{ github.sha }})"
+        gh issue create --title "$title" --body "$body"
 
     - name: Swap Slots
       run: |
         az webapp deployment slot swap -g ${{env.RG}} -n ${{ env.AZURE_WEBAPP_NAME }} \
              --slot staging  --target-slot production
-      
+    
+    - name: create issue if Swap fails
+      if: failure()
+      env:
+        GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+      run: |
+        title="${{ env.build_name }} Workflow ${{ github.run_number }} Failed! "
+        body="${{ env.build_name }} Worflow Failure -- Swap \
+        Build Number: ${{ github.run_number }} \
+        Build Log: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }} \
+        SHA: [${{ github.sha }}](https://github.com/${{ github.repository }}/commit/${{ github.sha }})"
+        gh issue create --title "$title" --body "$body"
