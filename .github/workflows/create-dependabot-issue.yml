@@ -9,14 +9,13 @@ on:
 jobs:
   issue:
       runs-on: ubuntu-latest
+      env:
+        GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
       steps:
-
         - name: Open issue if Dependabot PR
           if: github.event.pull_request.user.login  == 'dependabot[bot]'
           run: |
-            echo "this pr was created by dependabot"
-
-
-        - name: who
-          run: |
-            echo "github user is ${{ github.event.pull_request.user.login }}"
+            title="Dependabot PR ${{ github.event.pull_request.title }} opened"
+            body="Dependabot has opened PR #${{ github.event.pull_request.number }}
+            Link: ${{event.pull_request.labels.url}}"
+            gh issue create --title "$title" --body "$body"    
