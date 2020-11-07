@@ -7,8 +7,8 @@ RUN dotnet restore web/*.csproj
 
 # copy everything else and build
 COPY web/* ./web/
-RUN dotnet build --configuration Release --no-restore web/*.csproj 
-#RUN dotnet publish -c Release -o out
+## orig RUN dotnet build --configuration Release --no-restore web/*.csproj -o /app/out
+RUN dotnet publish -c Release  web/*.csproj -o /app/out
 COPY web/appsettings.*.json /app/out/
 COPY web/appsettings.json /app/out/
 
