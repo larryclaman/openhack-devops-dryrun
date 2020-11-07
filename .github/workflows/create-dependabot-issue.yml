@@ -12,7 +12,11 @@ jobs:
       steps:
 
         - name: Open issue if Dependabot PR
-          if: ${{ github.event.pull_request.user.login }} == "dependabot[bot]"
+          if: github.event.pull_request.user.login  == 'dependabot[bot]'
           run: |
             echo "this pr was created by dependabot"
+
+
+        - name: who
+          run: |
             echo "github user is ${{ github.event.pull_request.user.login }}"
