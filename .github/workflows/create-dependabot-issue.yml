@@ -15,8 +15,8 @@ jobs:
         - name: Open issue if Dependabot PR
           if: github.event.pull_request.user.login  == 'dependabot[bot]'
           env:
-            pr_title: ${{github.event.pull_request.name}}
-            pr_number: ${{github.event.pull_request.number}}
+            pr_title: ${{event.pull_request.name}}
+            pr_number: ${{event.pull_request.number}}
             pr_url: ${{event.pull_request.labels.url}}
           run: |
             title="Dependabot PR $pr_title opened"
