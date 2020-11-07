@@ -12,10 +12,17 @@ jobs:
       env:
         GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
       steps:
+        - uses: actions/checkout@v2
+          if: github.event.pull_request.user.login  == 'dependabot[bot]'
+          
         - name: Open issue if Dependabot PR
           if: github.event.pull_request.user.login  == 'dependabot[bot]'
+          env:
+            pr_title: ${{github.event.pull_request.title}}
+            pr_number: ${{github.event.pull_request.number}}
+            pr_url: ${{github.event.pull_request.url}}
           run: |
-            title="Dependabot PR ${{ github.event.pull_request.title }} opened"
-            body="Dependabot has opened PR #${{ github.event.pull_request.number }}
-            Link: ${{event.pull_request.labels.url}}"
+            title="Dependabot PR $pr_title opened"
+            body="Dependabot has opened PR #$pr_number
+            Link: $pr_url"
             gh issue create --title "$title" --body "$body"    
