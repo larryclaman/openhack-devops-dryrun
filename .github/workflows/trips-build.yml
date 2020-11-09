@@ -6,6 +6,10 @@ env:
   acrreg: openhack8pm8c3y5acr
   acrsite: openhack8pm8c3y5acr.azurecr.io
   tenant: 3ba0d033-7360-4927-8b0d-337841610e82
+  RG: openhack8pm8c3y5rg
+  AZURE_WEBAPP_NAME: openhack8pm8c3y5trips   # set this to your application's name
+
+
 
 on:
   workflow_dispatch:
@@ -24,9 +28,7 @@ on:
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  # This workflow contains a single job called "build"
-  build:
-    # The type of runner that the job will run on
+  build_and_test:
     runs-on: ubuntu-latest
 
     # Steps represent a sequence of tasks that will be executed as part of the job
@@ -125,5 +127,42 @@ jobs:
           # ghcr.io/${{ github.repository_owner }}/oh${{env.apiname}}:latest
 
 
+  Deploy:
+    if: github.ref == 'refs/heads/master'
+    runs-on: ubuntu-latest
+    needs: build_and_test
+    steps:     
+    - uses: actions/checkout@v2
 
+    - uses: azure/login@v1
+      name: Azure Login
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }} 
+
+### NOTE:  MUST add service principal as contributor to web app (or RG)
+    - name: 'Deploy to Azure Web App for Container'
+      uses: azure/webapps-deploy@v2
+      with: 
+        app-name: ${{ env.AZURE_WEBAPP_NAME }} 
+        images: ${{env.acrsite}}/${{env.repo}}:${{ github.run_number }}
+        slot-name: staging
+      
+
+    - name: create issue if deploy fails
+      if: failure()
+      env:
+        GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+      run: |
+        title="${{ env.apiname }} Workflow ${{ github.run_number }} Failed! "
+        body="${{ env.apiname }} Workflow Failure  -- deploy
+        Build Number: ${{ github.run_number }} 
+        Build Log: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }} 
+        SHA: [${{ github.sha }}](https://github.com/${{ github.repository }}/commit/${{ github.sha }})"
+        gh issue create --title "$title" --body "$body"       
+
+    - name: Swap Slots
+      run: |
+        az webapp deployment slot swap -g ${{env.RG}} -n ${{ env.AZURE_WEBAPP_NAME }} \
+             --slot staging  --target-slot production
+ 
 
