@@ -12,11 +12,11 @@ env:
 
 on:
   workflow_dispatch:
-   push:
-     branches: [ '*' ]
-     paths: 
-       - apis/trips/**  
-       - .github/workflows/trips-build-runner.yml
+  push:
+    branches: [ '*' ]
+    paths: 
+      - apis/trips/**  
+      - .github/workflows/trips-build-runner.yml
   # pull_request:
   #   branches: [ master ]
   #   paths: 
@@ -119,7 +119,7 @@ jobs:
             ${{env.acrsite}}/${{env.repo}}:${{ github.run_number }}
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache
-          file: Dockerfile-ci
+          file: apis/${{env.apiname}}/Dockerfile-ci
           context: apis/${{env.apiname}}
           target: gorun
           # old tags:
