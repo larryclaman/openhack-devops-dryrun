@@ -20,5 +20,6 @@ SQL_DBNAME="mydrivingDB"
 
 # Add the application's jar to the container
 COPY --from=build-env target/swagger-spring-1.0.0.jar user-java.jar
+ADD https://github.com/microsoft/ApplicationInsights-Java/releases/download/3.0.0/applicationinsights-agent-3.0.0.jar applicationinsights-agent-3.0.0.jar 
 
-ENTRYPOINT ["java","-Djava.security.egd=file:/dev/./urandom","-jar","/user-java.jar"]
+ENTRYPOINT ["java","-Djava.security.egd=file:/dev/./urandom","-javaagent:applicationinsights-agent-3.0.0.jar","-jar","/user-java.jar"]
