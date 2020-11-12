@@ -1,7 +1,7 @@
 'use strict';
 
 let appInsights = require('applicationinsights');
-appInsights.setup.start();
+appInsights.setup().start();
 
 var Http = require('http');
 var Express = require('express');
