@@ -47,7 +47,7 @@ namespace poi
             });
 
             // The following line enables Application Insights telemetry collection.
-            //services.AddApplicationInsightsTelemetry();
+            services.AddApplicationInsightsTelemetry();
 
 
         }
