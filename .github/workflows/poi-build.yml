@@ -39,13 +39,13 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
 
-      - name: Cache Docker layers
-        uses: actions/cache@v2
-        with:
-          path: /tmp/.buildx-cache
-          key: ${{ runner.os }}-${{env.apiname}}-${{ github.sha }}
-          restore-keys: |
-            ${{ runner.os }}-${{env.apiname}}-
+      # - name: Cache Docker layers
+      #   uses: actions/cache@v2
+      #   with:
+      #     path: /tmp/.buildx-cache
+      #     key: ${{ runner.os }}-${{env.apiname}}-${{ github.sha }}
+      #     restore-keys: |
+      #       ${{ runner.os }}-${{env.apiname}}-
 
 
       # - name: Login to GitHub Container Registry
@@ -74,8 +74,8 @@ jobs:
           push: false
           tags: |
            ${{env.acrsite}}/${{env.repo}}-test:${{ github.run_number }}
-          cache-from: type=local,src=/tmp/.buildx-cache
-          cache-to: type=local,dest=/tmp/.buildx-cache,mode=max
+#          cache-from: type=local,src=/tmp/.buildx-cache
+#          cache-to: type=local,dest=/tmp/.buildx-cache,mode=max
           file: apis/${{env.apiname}}/Dockerfile-buildtest
           context: apis/${{env.apiname}}
           target: test
@@ -102,8 +102,8 @@ jobs:
           tags: |
             ${{env.acrsite}}/${{env.repo}}:${{ github.run_number }}
             ${{env.acrsite}}/${{env.repo}}:latest
-          cache-from: type=local,src=/tmp/.buildx-cache
-          cache-to: type=local,dest=/tmp/.buildx-cache
+#          cache-from: type=local,src=/tmp/.buildx-cache
+#          cache-to: type=local,dest=/tmp/.buildx-cache
           file: apis/${{env.apiname}}/Dockerfile-buildtest
           context: apis/${{env.apiname}}
           target: final
