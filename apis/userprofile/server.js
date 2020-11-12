@@ -1,5 +1,7 @@
 'use strict';
 
+let appInsights = require('applicationinsights');
+
 var Http = require('http');
 var Express = require('express');
 var BodyParser = require('body-parser');
