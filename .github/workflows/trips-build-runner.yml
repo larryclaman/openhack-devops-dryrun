@@ -120,7 +120,7 @@ jobs:
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache
           file: Dockerfile-ci
-          context: .
+          context: apis/${{env.apiname}}
           target: gorun
           # old tags:
           # ghcr.io/${{ github.repository_owner }}/oh${{env.apiname}}:${{ github.run_number }}
