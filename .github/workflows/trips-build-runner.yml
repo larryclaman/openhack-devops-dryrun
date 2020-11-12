@@ -1,0 +1,168 @@
+name: build-trips-runner
+
+env:
+  apiname: trips
+  repo: devopsoh/api-trips
+  acrreg: openhack8pm8c3y5acr
+  acrsite: openhack8pm8c3y5acr.azurecr.io
+  tenant: 3ba0d033-7360-4927-8b0d-337841610e82
+  RG: openhack8pm8c3y5rg
+  AZURE_WEBAPP_NAME: openhack8pm8c3y5trips   # set this to your application's name
+
+
+on:
+  workflow_dispatch:
+   push:
+     branches: [ '*' ]
+     paths: 
+       - apis/trips/**  
+       - .github/workflows/trips-build.yml
+  # pull_request:
+  #   branches: [ master ]
+  #   paths: 
+  #     - apis/trips/**
+  #     - .github/workflows/trips-build.yml
+
+
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  build_and_test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apis/trips
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v2
+      - uses: actions/setup-go@v2
+        with:
+          go-version: '1.11.1'
+      - name: Go install deps
+        run: |
+          go version 
+          go get 
+      - name: Go Build
+        run: CGO_ENABLED=0 GOOS=linux go build -o main .
+      - name: Go Unit Tests
+        run: go test ./tests
+
+      - name: create issue if Go Unit test failed
+        if: failure()
+        env:
+          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+        run: |
+          title="${{ env.build_name }} Workflow ${{ github.run_number }} Failed! "
+          body="${{ env.build_name }} Worflow Failure \
+          Build Number: ${{ github.run_number }} \
+          Build Log: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }} \
+          SHA: [${{ github.sha }}](https://github.com/${{ github.repository }}/commit/${{ github.sha }})"
+          gh issue create --title "$title" --body "$body"
+
+
+      - run: |
+          ls -l 
+          ls -l api
+
+
+      # Configures Docker actions to use buildx
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+
+      - name: Cache Docker layers
+        uses: actions/cache@v2
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-${{env.apiname}}R-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-${{env.apiname}}R-
+
+
+      # - name: Login to GitHub Container Registry
+      #   uses: docker/login-action@v1
+      #   with:
+      #     registry: ghcr.io
+      #     username: ${{ github.repository_owner }}
+      #     password: ${{ secrets.CR_PAT }}
+
+      - name: Login to Azure Container Registry
+        uses: docker/login-action@v1
+        with:
+          registry: ${{env.acrsite}}
+          username: ${{ secrets.ACR_USERNAME }}
+          password: ${{ secrets.ACR_PASSWORD }}
+
+
+      # - uses: azure/login@v1
+      #   name: Azure Login
+      #   with:
+      #     creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      # - name: Log into ACR
+      #   uses: azure/CLI@v1
+      #   with:
+      #     #azcliversion: 2.0.72
+      #     inlineScript: |
+      #       tj=$(az acr login -n ${{env.acrreg}} -t)
+      #       token=$(echo $tj|jq -r .token)
+
+
+
+      - name: Build trips container and push
+        id: userprofile_docker_buildpush
+        uses: docker/build-push-action@v2
+        with:
+          push: true
+          tags: |
+            ${{env.acrsite}}/${{env.repo}}:${{ github.run_number }}
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,dest=/tmp/.buildx-cache
+          file: Dockerfile-ci
+          context: .
+          target: gorun
+          # old tags:
+          # ghcr.io/${{ github.repository_owner }}/oh${{env.apiname}}:${{ github.run_number }}
+          # ghcr.io/${{ github.repository_owner }}/oh${{env.apiname}}:latest
+
+
+  Deploy:
+    if: github.ref == 'refs/heads/master'
+    runs-on: ubuntu-latest
+    needs: build_and_test
+    steps:     
+    - uses: actions/checkout@v2
+
+    - uses: azure/login@v1
+      name: Azure Login
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }} 
+
+### NOTE:  MUST add service principal as contributor to web app (or RG)
+    - name: 'Deploy to Azure Web App for Container Staging Slot'
+      uses: azure/webapps-deploy@v2
+      with: 
+        app-name: ${{ env.AZURE_WEBAPP_NAME }} 
+        images: ${{env.acrsite}}/${{env.repo}}:${{ github.run_number }}
+        slot-name: staging
+      
+
+    - name: create issue if deploy fails
+      if: failure()
+      env:
+        GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+      run: |
+        title="${{ env.apiname }} Workflow ${{ github.run_number }} Failed! "
+        body="${{ env.apiname }} Workflow Failure  -- deploy
+        Build Number: ${{ github.run_number }} 
+        Build Log: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }} 
+        SHA: [${{ github.sha }}](https://github.com/${{ github.repository }}/commit/${{ github.sha }})"
+        gh issue create --title "$title" --body "$body"       
+
+    - name: Swap Slots
+      run: |
+        az webapp deployment slot swap -g ${{env.RG}} -n ${{ env.AZURE_WEBAPP_NAME }} \
+             --slot staging  --target-slot production
+ 
+
