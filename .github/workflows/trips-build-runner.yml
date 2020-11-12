@@ -12,11 +12,11 @@ env:
 
 on:
   workflow_dispatch:
-  # push:
-  #   branches: [ '*' ]
-  #   paths: 
-  #     - apis/trips/**  
-  #     - .github/workflows/trips-build.yml
+   push:
+     branches: [ '*' ]
+     paths: 
+       - apis/trips/**  
+       - .github/workflows/trips-build.yml
   # pull_request:
   #   branches: [ master ]
   #   paths: 
