@@ -2,13 +2,14 @@ FROM microsoft/dotnet:2.1-sdk AS build-env
 WORKDIR /app
 
 # copy csproj and restore as distinct layers
-COPY web/*.csproj ./web/
-RUN dotnet restore web/*.csproj
+COPY web/poi.csproj ./web/
+RUN dotnet restore web/poi.csproj
 
 # copy everything else and build
 COPY web/* ./web/
+
 ## orig RUN dotnet build --configuration Release --no-restore web/*.csproj -o /app/out
-RUN dotnet publish -c Release  web/*.csproj -o /app/out
+RUN dotnet publish -c Release --no-restore web/poi.csproj -o /app/out
 COPY web/appsettings.*.json /app/out/
 COPY web/appsettings.json /app/out/
 

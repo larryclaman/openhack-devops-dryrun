@@ -94,7 +94,7 @@ jobs:
 
 
 
-      - name: Build poi app and push
+      - name: Build poi app final layer and push
         id: userprofile_docker_buildpush
         uses: docker/build-push-action@v2
         with:
