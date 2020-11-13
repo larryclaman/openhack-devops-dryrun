@@ -3,11 +3,11 @@ name: build-poi
 env:
   apiname: poi
   repo: devopsoh/api-poi
-  acrreg: openhack8pm8c3y5acr
-  acrsite: openhack8pm8c3y5acr.azurecr.io
-  tenant: 3ba0d033-7360-4927-8b0d-337841610e82
-  RG: openhack8pm8c3y5rg
-  AZURE_WEBAPP_NAME: openhack8pm8c3y5poi   # set this to your application's name
+  acrreg: openhacklnc1acr
+  acrsite: openhacklnc1acr.azurecr.io
+  tenant: ${{ secrets.tenant }}
+  RG: openhacklnc1rg
+  AZURE_WEBAPP_NAME: openhacklnc1poi   # set this to your application's name
 
 on:
   workflow_dispatch:
@@ -115,6 +115,16 @@ jobs:
     needs: build_and_test
     steps:     
     - uses: actions/checkout@v2
+
+    # azure/login requires a GH Secret named AZURE_CREDENTIALS
+    # which is a json object of the format:
+    # {
+    # "clientId": "<GUID>",
+    # "clientSecret": "<GUID>",
+    # "subscriptionId": "<GUID>",
+    # "tenantId": "<GUID>",
+    # (...)
+    # }
 
     - uses: azure/login@v1
       name: Azure Login
