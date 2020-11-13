@@ -142,7 +142,7 @@ jobs:
 
     - name: Swap Slots
       run: |
-        az webapp deployment slot swap -g ${{env.RG}} -n ${{ env.AZURE_WEBAPP_NAME }} \
+        timeout 600 az webapp deployment slot swap -g ${{env.RG}} -n ${{ env.AZURE_WEBAPP_NAME }} \
              --slot staging  --target-slot production
     
     - name: create issue if Swap fails
