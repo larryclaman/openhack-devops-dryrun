@@ -154,7 +154,7 @@ jobs:
         gh issue create --title "$title" --body "$body"       
 
     - name: Swap Slots
-      run: |
-        az webapp deployment slot swap -g ${{env.RG}} -n ${{ env.AZURE_WEBAPP_NAME }} \
-             --slot staging  --target-slot production
+      run: >
+        az webapp deployment slot swap -g ${{env.RG}} -n ${{ env.AZURE_WEBAPP_NAME }} 
+        --slot staging  --target-slot production
     

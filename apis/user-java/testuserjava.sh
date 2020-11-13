@@ -2,7 +2,7 @@
 
 
 export SQL_USER="demousersa" 
-export SQL_PASSWORD="demo@pass123" 
+export SQL_PASSWORD="xxxxx" 
 export SQL_SERVER="openhack8pm8c3y5sql.database.windows.net" 
 export SQL_DBNAME="mydrivingDB"
 
