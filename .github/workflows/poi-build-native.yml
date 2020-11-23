@@ -1,0 +1,113 @@
+name: build-poi-native
+
+env:
+  apiname: poi
+  repo: devopsoh/api-poi
+  acrreg: openhacklnc1acr
+  acrsite: openhacklnc1acr.azurecr.io
+  tenant: ${{ secrets.tenant }}
+  RG: openhacklnc1rg
+  AZURE_WEBAPP_NAME: openhacklnc1poinative   # set this to your application's name
+  AZURE_WEBAPP_PACKAGE_PATH: '.'  
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ '*' ]
+    paths: 
+      - apis/poi/**  
+      - .github/workflows/poi-build.yml
+  pull_request:
+    branches: [ master ]
+    paths: 
+      - apis/poi/**
+      - .github/workflows/poi-build.yml
+
+
+
+jobs:
+  build_and_test_poi_native:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apis/poi
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v2
+
+      - uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: '2.1.x' # SDK Version to use; x will use the latest version of the 3.1 channel
+
+      - name: dotnet build, test, publish 
+        run: |
+          dotnet restore web/poi.csproj
+          dotnet build --configuration Release 
+          dotnet publish -c Release -o '${{ env.AZURE_WEBAPP_PACKAGE_PATH }}/poiapp' 
+
+      - name: create issue if build & test failed
+        if: failure()
+        env:
+          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+        run: |
+          title="${{ env.apiname }} Workflow ${{ github.run_number }} Failed! "
+          body="${{ env.apiname }} Workflow Failure 
+          Build Number: ${{ github.run_number }} 
+          Build Log: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }} 
+          SHA: [${{ github.sha }}](https://github.com/${{ github.repository }}/commit/${{ github.sha }})"
+          gh issue create --title "$title" --body "$body"
+
+
+
+
+
+
+  Deploy:
+    if: github.ref == 'refs/heads/master'
+    runs-on: ubuntu-latest
+    needs:   build_and_test_poi_native
+    steps:     
+    - uses: actions/checkout@v2
+
+    # azure/login requires a GH Secret named AZURE_CREDENTIALS
+    # which is a json object of the format:
+    # {
+    # "clientId": "<GUID>",
+    # "clientSecret": "<GUID>",
+    # "subscriptionId": "<GUID>",
+    # "tenantId": "<GUID>",
+    # (...)
+    # }
+
+    - uses: azure/login@v1
+      name: Azure Login
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }} 
+
+### NOTE:  MUST add service principal as contributor to web app (or RG)
+    - name: 'Deploy to Azure Web App for Container Staging Slot'
+      uses: azure/webapps-deploy@v2
+      with: 
+        app-name: ${{ env.AZURE_WEBAPP_NAME }}
+        package: '${{ env.AZURE_WEBAPP_PACKAGE_PATH }}/poiapp'
+       # slot-name: staging
+      
+    - name: create issue if deploy fails
+      if: failure()
+      env:
+        GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+      run: |
+        title="${{ env.apiname }} Workflow ${{ github.run_number }} Failed! "
+        body="${{ env.apiname }} Workflow Failure  -- deploy
+        Build Number: ${{ github.run_number }} 
+        Build Log: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }} 
+        SHA: [${{ github.sha }}](https://github.com/${{ github.repository }}/commit/${{ github.sha }})"
+        gh issue create --title "$title" --body "$body"       
+
+    # - name: Swap Slots
+    #   run: >
+    #     az webapp deployment slot swap -g ${{env.RG}} -n ${{ env.AZURE_WEBAPP_NAME }} 
+    #     --slot staging  --target-slot production
+    
