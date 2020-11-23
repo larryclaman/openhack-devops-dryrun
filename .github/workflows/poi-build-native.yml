@@ -44,7 +44,9 @@ jobs:
       - name: dotnet build, test, publish 
         run: |
           dotnet restore web/poi.csproj
+          ls -l 
           dotnet build --configuration Release 
+          ls -l 
           dotnet publish -c Release -o '${{ env.AZURE_WEBAPP_PACKAGE_PATH }}/poiapp' 
 
       - name: create issue if build & test failed
@@ -61,6 +63,16 @@ jobs:
 
 
 
+      - uses: azure/login@v1
+        name: Azure Login
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }} 
+
+      - name: 'Deploy to Azure Web App Staging Slot'
+        uses: azure/webapps-deploy@v2
+        with: 
+          app-name: ${{ env.AZURE_WEBAPP_NAME }}
+          package: '${{ env.AZURE_WEBAPP_PACKAGE_PATH }}/poiapp'
 
 
 
@@ -87,11 +99,11 @@ jobs:
         creds: ${{ secrets.AZURE_CREDENTIALS }} 
 
 ### NOTE:  MUST add service principal as contributor to web app (or RG)
-    - name: 'Deploy to Azure Web App for Container Staging Slot'
-      uses: azure/webapps-deploy@v2
-      with: 
-        app-name: ${{ env.AZURE_WEBAPP_NAME }}
-        package: '${{ env.AZURE_WEBAPP_PACKAGE_PATH }}/poiapp'
+    # - name: 'Deploy to Azure Web App for Container Staging Slot'
+    #   uses: azure/webapps-deploy@v2
+    #   with: 
+    #     app-name: ${{ env.AZURE_WEBAPP_NAME }}
+    #     package: '${{ env.AZURE_WEBAPP_PACKAGE_PATH }}/poiapp'
        # slot-name: staging
       
     - name: create issue if deploy fails
