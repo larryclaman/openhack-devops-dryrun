@@ -60,8 +60,8 @@ jobs:
           dotnet-version: '2.1.x' # SDK Version to use; x will use the latest version of the 3.1 channel
 
 
-      - name: showcache
-        run: dotnet nuget locals all -l
+      # - name: showcache
+      #   run: dotnet nuget locals all -l
 
 
       - name: dotnet build, test, publish 
@@ -91,7 +91,7 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: ${{ env.artifact-name}}
-          path: 'web/poiapp' # or path/to/artifact
+          path: '${{jobs.defaults.run.working-directory}}/web/poiapp' # or path/to/artifact
 
 
 
