@@ -8,7 +8,7 @@ env:
   tenant: ${{ secrets.tenant }}
   RG: openhacklnc1rg
   AZURE_WEBAPP_NAME: openhacklnc1poinative   # set this to your application's name
-  AZURE_WEBAPP_PACKAGE_PATH: 'web'  
+  AZURE_WEBAPP_PACKAGE_PATH: '.'  
 
 on:
   workflow_dispatch:
@@ -71,7 +71,8 @@ jobs:
           dotnet test --no-restore --verbosity normal tests/UnitTests  /p:CollectCoverage=true /p:CoverletOutput=lcov/ /p:CoverletOutputFormat=lcov
           dotnet publish -c Release -o '${{ env.AZURE_WEBAPP_PACKAGE_PATH }}/poiapp'
 
-      - run: ls -l web 
+      - run: |  
+          ls -l web 
 
       - name: create issue if build & test failed
         if: failure()
