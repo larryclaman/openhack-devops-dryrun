@@ -1,4 +1,4 @@
-name: build-poi-native
+name: BuildPoiNative
 
 env:
   apiname: poi
@@ -54,11 +54,13 @@ jobs:
 
 
       - uses: actions/setup-dotnet@v1
+        id: setupdotnet
         with:
           dotnet-version: '2.1.x' # SDK Version to use; x will use the latest version of the 3.1 channel
 
 
-      - run: dotnet nuget locals all -l
+      - name: showcache
+        run: dotnet nuget locals all -l
 
 
       - name: dotnet build, test, publish 
@@ -69,7 +71,7 @@ jobs:
           dotnet test --no-restore --verbosity normal tests/UnitTests  /p:CollectCoverage=true /p:CoverletOutput=lcov/ /p:CoverletOutputFormat=lcov
           dotnet publish -c Release -o '${{ env.AZURE_WEBAPP_PACKAGE_PATH }}/poiapp'
 
-      - run: ls -l web/poiapp 
+      - run: ls -l web 
 
       - name: create issue if build & test failed
         if: failure()
