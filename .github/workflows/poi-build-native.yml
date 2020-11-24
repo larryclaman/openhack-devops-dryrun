@@ -91,7 +91,7 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: ${{ env.artifact-name}}
-          path: '${{jobs.defaults.run.working-directory}}/web/poiapp' # or path/to/artifact
+          path: 'apis/poi/web/poiapp' # or path/to/artifact
 
 
 
