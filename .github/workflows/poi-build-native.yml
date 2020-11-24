@@ -8,7 +8,7 @@ env:
   tenant: ${{ secrets.tenant }}
   RG: openhacklnc1rg
   AZURE_WEBAPP_NAME: openhacklnc1poinative   # set this to your application's name
-  AZURE_WEBAPP_PACKAGE_PATH: '.'  
+  AZURE_WEBAPP_PACKAGE_PATH: 'web'  
 
 on:
   workflow_dispatch:
@@ -16,12 +16,12 @@ on:
     branches: [ '*' ]
     paths: 
       - apis/poi/**  
-      - .github/workflows/poi-build.yml
+      - .github/workflows/poi-build-native.yml
   pull_request:
     branches: [ master ]
     paths: 
       - apis/poi/**
-      - .github/workflows/poi-build.yml
+      - .github/workflows/poi-build-native.yml
 
 
 
@@ -37,17 +37,39 @@ jobs:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
 
+      # larry@LNC-SLaptop3:/mnt/c/Users/laclama/MyDev/1-OpenHack/DevOps2 Coaching Nov 2020/github/apis/poi$ dotnet nuget locals all -l
+      # http-cache: /home/larry/.local/share/NuGet/v3-cache
+      # global-packages: /home/larry/.nuget/packages/
+      # temp: /tmp/NuGetScratch
+      # plugins-cache: /home/larry/.local/share/NuGet/plugins-cache
+
+
+      - name: Cache .net cache
+        uses: actions/cache@v2
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-${{github.workflow}}-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-${{github.workflow}}-
+
+
       - uses: actions/setup-dotnet@v1
         with:
           dotnet-version: '2.1.x' # SDK Version to use; x will use the latest version of the 3.1 channel
 
+
+      - run: dotnet nuget locals all -l
+
+
       - name: dotnet build, test, publish 
+        # inherits working-directory: apis/poi
         run: |
           dotnet restore web/poi.csproj
-          ls -l 
           dotnet build --configuration Release 
-          ls -l 
-          dotnet publish -c Release -o '${{ env.AZURE_WEBAPP_PACKAGE_PATH }}/poiapp' 
+          dotnet test --no-restore --verbosity normal tests/UnitTests  /p:CollectCoverage=true /p:CoverletOutput=lcov/ /p:CoverletOutputFormat=lcov
+          dotnet publish -c Release -o '${{ env.AZURE_WEBAPP_PACKAGE_PATH }}/poiapp'
+
+      - run: ls -l web/poiapp 
 
       - name: create issue if build & test failed
         if: failure()
@@ -61,18 +83,11 @@ jobs:
           SHA: [${{ github.sha }}](https://github.com/${{ github.repository }}/commit/${{ github.sha }})"
           gh issue create --title "$title" --body "$body"
 
-
-
-      - uses: azure/login@v1
-        name: Azure Login
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v2
         with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }} 
-
-      - name: 'Deploy to Azure Web App Staging Slot'
-        uses: azure/webapps-deploy@v2
-        with: 
-          app-name: ${{ env.AZURE_WEBAPP_NAME }}
-          package: '${{ env.AZURE_WEBAPP_PACKAGE_PATH }}/poiapp'
+          name: poiapp
+          path: '${{ env.AZURE_WEBAPP_PACKAGE_PATH }}/poiapp' # or path/to/artifact
 
 
 
@@ -105,6 +120,14 @@ jobs:
     #     app-name: ${{ env.AZURE_WEBAPP_NAME }}
     #     package: '${{ env.AZURE_WEBAPP_PACKAGE_PATH }}/poiapp'
        # slot-name: staging
+
+
+    - name: 'Deploy to Azure Web App Staging Slot'
+      uses: azure/webapps-deploy@v2
+      with: 
+        app-name: ${{ env.AZURE_WEBAPP_NAME }}
+        package: '${{ env.AZURE_WEBAPP_PACKAGE_PATH }}/poiapp'
+       # slot-name: staging
       
     - name: create issue if deploy fails
       if: failure()
@@ -112,7 +135,7 @@ jobs:
         GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
       run: |
         title="${{ env.apiname }} Workflow ${{ github.run_number }} Failed! "
-        body="${{ env.apiname }} Workflow Failure  -- deploy
+        body="${{ env.apiname }} Workflow Failure  -- deploy to staging
         Build Number: ${{ github.run_number }} 
         Build Log: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }} 
         SHA: [${{ github.sha }}](https://github.com/${{ github.repository }}/commit/${{ github.sha }})"

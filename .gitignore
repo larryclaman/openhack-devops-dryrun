@@ -3,6 +3,12 @@
 ##
 ## Get latest from https://github.com/github/gitignore/blob/master/VisualStudio.gitignore
 
+#devstuff
+act
+act/
+act/*
+poiapp/
+
 # User-specific files
 *.suo
 *.user
@@ -289,3 +295,4 @@ __pycache__/
 
 .DS_Store
 .vscode/
+
