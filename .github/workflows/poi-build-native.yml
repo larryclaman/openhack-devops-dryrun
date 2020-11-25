@@ -119,7 +119,9 @@ jobs:
         path: poiapp
 
 
-    - run: ls -l  
+    - run: |
+        ls -l  
+        ls -l poiapp 
 
 
     # azure/login requires a GH Secret named AZURE_CREDENTIALS
