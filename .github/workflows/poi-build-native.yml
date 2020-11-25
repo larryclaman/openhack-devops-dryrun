@@ -65,7 +65,7 @@ jobs:
       - uses: actions/setup-dotnet@v1
         id: setupdotnet
         with:
-          dotnet-version: '2.1.15' # SDK Version to use; 
+          dotnet-version: '2.1.5' # SDK Version to use; 
 
 
       # - name: showcache
@@ -116,6 +116,10 @@ jobs:
       with:
         name: ${{ env.artifact-name}}
         path: poiapp
+
+
+    - run: ls -l  
+
 
     # azure/login requires a GH Secret named AZURE_CREDENTIALS
     # which is a json object of the format:
