@@ -45,19 +45,27 @@ jobs:
       # plugins-cache: /home/larry/.local/share/NuGet/plugins-cache
 
 
-      - name: Cache .net cache
+      - name: Cache nuget cache
         uses: actions/cache@v2
         with:
           path: ~/.nuget/packages
-          key: ${{ runner.os }}-${{github.workflow}}-${{ github.sha }}
+          key: ${{ runner.os }}-${{github.workflow}}nuget-${{ github.sha }}
           restore-keys: |
-            ${{ runner.os }}-${{github.workflow}}-
+            ${{ runner.os }}-${{github.workflow}}nuget-
+
+      - name: Cache .NET cache
+        uses: actions/cache@v2
+        with:
+          path: ~/.dotnet
+          key: ${{ runner.os }}-${{github.workflow}}dotnet-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-${{github.workflow}}dotnet-
 
 
       - uses: actions/setup-dotnet@v1
         id: setupdotnet
         with:
-          dotnet-version: '2.1.x' # SDK Version to use; x will use the latest version of the 3.1 channel
+          dotnet-version: '2.1.15' # SDK Version to use; 
 
 
       # - name: showcache
