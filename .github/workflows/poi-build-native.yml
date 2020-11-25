@@ -10,6 +10,7 @@ env:
   AZURE_WEBAPP_NAME: openhacklnc1poinative   # set this to your application's name
   AZURE_WEBAPP_PACKAGE_PATH: '.' 
   artifact-name:  poiapp
+  dotnetversion:  '2.1.x'
 
 on:
   workflow_dispatch:
@@ -65,7 +66,7 @@ jobs:
       - uses: actions/setup-dotnet@v1
         id: setupdotnet
         with:
-          dotnet-version: '2.1.5' # SDK Version to use; 
+          dotnet-version: ${{env.dotnetversion}} # SDK Version to use; 
 
 
       # - name: showcache
