@@ -157,7 +157,7 @@ jobs:
        # slot-name: staging 
 
 
-    - name: 'Deploy to Azure Web App 
+    - name: 'Deploy to Azure Web App'
       uses: azure/webapps-deploy@v2
       with: 
         app-name: ${{ env.AZURE_WEBAPP_NAME }}
@@ -180,4 +180,6 @@ jobs:
     #   run: >
     #     az webapp deployment slot swap -g ${{env.RG}} -n ${{ env.AZURE_WEBAPP_NAME }} 
     #     --slot staging  --target-slot production
+
+
     
