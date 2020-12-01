@@ -13,6 +13,7 @@ namespace poi.Controllers
 {
     [Produces("application/json")]
     [Route("api/healthcheck/poi")]
+    [Route("/")]
     public class HealthCheckController : ControllerBase
     {
 
