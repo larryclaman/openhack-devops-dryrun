@@ -157,11 +157,11 @@ jobs:
        # slot-name: staging
 
 
-    # - name: 'Deploy to Azure Web App Staging Slot'
-    #   uses: azure/webapps-deploy@v2
-    #   with: 
-    #     app-name: ${{ env.AZURE_WEBAPP_NAME }}
-    #     package: poiapp
+    - name: 'Deploy to Azure Web App Staging Slot'
+      uses: azure/webapps-deploy@v2
+      with: 
+        app-name: ${{ env.AZURE_WEBAPP_NAME }}
+        package: poiapp
     #    # slot-name: staging
       
     - name: create issue if deploy fails
