@@ -97,11 +97,11 @@ jobs:
           gh issue create --title "$title" --body "$body"
 
 
-      - name: 'Deploy to Azure Web App '
-        uses: azure/webapps-deploy@v2
-        with: 
-          app-name: ${{ env.AZURE_WEBAPP_NAME }}
-          package: web/poiapp
+      # - name: 'Deploy to Azure Web App '
+      #   uses: azure/webapps-deploy@v2
+      #   with: 
+      #     app-name: ${{ env.AZURE_WEBAPP_NAME }}
+      #     package: web/poiapp
         # slot-name: staging
 
 
