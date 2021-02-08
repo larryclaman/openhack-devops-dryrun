@@ -13,7 +13,7 @@ jobs:
     # file with configuration.  For more information, see:
     # https://github.com/actions/labeler
     - name: Label PR
-      uses: actions/labeler@v2
+      uses: actions/labeler@v3
       with:
         repo-token: "${{ secrets.GITHUB_TOKEN }}"
         
