@@ -122,7 +122,7 @@ jobs:
 ### NOTE:  MUST add service principal as contributor to web app (or RG)
 
     - name: 'Deploy to Azure Web App for Container Staging Slot'
-      uses: azure/webapps-deploy@v2
+      uses: azure/webapps-deploy@v2.1.6
       with: 
         app-name: ${{ env.AZURE_WEBAPP_NAME }} 
         images: ${{env.acrsite}}/${{env.repo}}:${{ github.run_number }}
