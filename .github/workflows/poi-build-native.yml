@@ -37,7 +37,7 @@ jobs:
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3.1.0
 
       # larry@LNC-SLaptop3:/mnt/c/Users/laclama/MyDev/1-OpenHack/DevOps2 Coaching Nov 2020/github/apis/poi$ dotnet nuget locals all -l
       # http-cache: /home/larry/.local/share/NuGet/v3-cache
@@ -120,7 +120,7 @@ jobs:
     steps:     
 
 
-    # - uses: actions/checkout@v2
+    # - uses: actions/checkout@v3.1.0
 
     - uses: actions/download-artifact@v2
       with:
